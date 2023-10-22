@@ -1,0 +1,41 @@
+[
+	{
+		"type": "bot",
+		"name": "Britain",
+		"colour": "#ff0000",
+		"allies": ["Russian empire"],
+		"enemies": ["German empire"],
+		"non-aggression pacts": [],
+		"right of passage": [],
+		"relationships": {
+			"German empire": -34,
+			"Russian empire": 42
+		}
+	},
+	{
+		"type": "bot",
+		"name": "German empire",
+		"colour": "#000000",
+		"allies": [],
+		"enemies": ["Britain", "Russian empire"],
+		"non-aggression pacts": [],
+		"right of passage": [],
+		"relationships": {
+			"Britain": -34,
+			"Russian empire": -55
+		}
+	},
+	{
+		"type": "bot",
+		"name": "Russian empire",
+		"colour": "#167100",
+		"allies": ["Britain"],
+		"enemies": ["German empire"],
+		"non-aggression pacts": [],
+		"right of passage": [],
+		"relationships": {
+			"German empire": -55,
+			"Britain": 42
+		}
+	}
+]
