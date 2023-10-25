@@ -9,7 +9,8 @@ class Bot:
 		self.non_aggression_pacts = set()
 		self.right_of_passage = set()
 		self.relationships = set()	
-	
+		self.borders = set() # variable for save set of pixels in borders
+
 	def turn(self, mainobj, amount_units:int):
 		return self.attack(mainobj, amount_units)
 	
@@ -35,6 +36,22 @@ class Bot:
 					return True
 			case _ :
 				return False
+	def search_borders_from_zero(self, mainobj): # This function need to get coordinates about all pixels next to the other countries as set and then updating data everyone turn
+		end_list = set()
+		for x in enumerate(mainobj.map):
+			for y in enumerate(x[1]):
+				try:
+					if mainobj.country_by_colour.get(mainobj.map[x[0]][y[0]], "") == self.name:
+						for x_adder in range(-1, 2):
+							for y_adder in range(-1, 2):
+								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") != self.name:
+									end_list.add((x[0] + x_adder, y[0] + y_adder))
+					else: continue
+				except IndexError: continue
+		return end_list
+	def attack2(self, mainobj, amount_units:int):
+		for i in self.borders: #i is tuple - (x, y)
+			if main
 	def attack(self, mainobj, amount_units:int):
 		result = list()
 		print(self.name, amount_units)

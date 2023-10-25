@@ -21,7 +21,7 @@ class Main:
 		self.canvas.place(x = 0, y = 0)
 		self.turn_button[0].place(x = 0, y = 0)
 	#place unit (pixel but with custom sizes)
-	def place_unit(self, x:int, y:int, colour:str): 
+	def place_unit(self, x:int, y:int, colour:str):
 		return self.canvas.create_rectangle(x * self.unit_size, y * self.unit_size, x * self.unit_size + self.unit_size, y * self.unit_size + self.unit_size, width = 0, fill = colour)
 	# hz
 	def init_canvas(self, path):
@@ -42,10 +42,6 @@ class Main:
 				if i is not None:
 					self.place_unit(i[0], i[1], country.colour)
 					self.map[i[0]][i[1]] = country.colour
-			# for country_data in data:
-			# 	if country_data[0]:
-			# 		for unit in country_data[0]:
-			# 			self.place_unit(unit[0], unit[1], '#ff00ff')
 	# for PIL
 	def rgb_to_hex(self, rgb:tuple):
 		if not rgb[3]: return self.colour_sea
@@ -98,7 +94,7 @@ class Main:
 			"#457540": "Russian empire",
 			"#373737": "German empire"
 		}
-main = Main(1, width=400, height=225)
+main = Main(3, width=1600, height=900)
 main.place_canvas()
 main.unpack('scenario/1914')
 main.init_map('scenario/1914')
