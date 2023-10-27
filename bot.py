@@ -1,18 +1,24 @@
 from random import randint
 
 class Bot:
-	def __init__(self, country:str, colour:tuple):
+	def __init__(self, country:str, colour:tuple, power:int):
 		self.name = country
 		self.colour = colour
+		self.power = power
 		self.enemies = set()
 		self.allies = set()
 		self.non_aggression_pacts = set()
 		self.right_of_passage = set()
 		self.relationships = set()	
 		self.borders = set() # variable for save set of pixels in borders
+		self.attacked_pixels_to_check = list()
+		self.pixels_on_borders_to_delete = list()
+		self.update_borders_counter = 0
 
 	def turn(self, mainobj, amount_units:int):
-		return self.attack(mainobj, amount_units)
+		self.borders = self.search_borders_from_zero(mainobj)
+		#print(f"[ S ] {self.name}, {amount_units}")
+		return self.attack2(mainobj, amount_units)
 	
 	# functions 'propose', 'relate' and 'attack' only return results, then 'Main' will set those to properties and files
 	
@@ -37,6 +43,7 @@ class Bot:
 			case _ :
 				return False
 	def search_borders_from_zero(self, mainobj): # This function need to get coordinates about all pixels next to the other countries as set and then updating data everyone turn
+		#print(f'[ S ] Updating borders for \033[33m{self.name}\033[0m')
 		end_list = set()
 		for x in enumerate(mainobj.map):
 			for y in enumerate(x[1]):
@@ -44,14 +51,60 @@ class Bot:
 					if mainobj.country_by_colour.get(mainobj.map[x[0]][y[0]], "") == self.name:
 						for x_adder in range(-1, 2):
 							for y_adder in range(-1, 2):
-								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") != self.name:
-									end_list.add((x[0] + x_adder, y[0] + y_adder))
+								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") in self.enemies:
+									end_list.add((x[0], y[0]))
 					else: continue
 				except IndexError: continue
 		return end_list
-	def attack2(self, mainobj, amount_units:int):
-		for i in self.borders: #i is tuple - (x, y)
-			if main
+	def attack2(self, mainobj, amount_units:int): # STOP! This code is very hard for understand. Do you really want to continue?
+		result = list()
+	#![MAIN CYCLE]
+		for i_index, i_value in enumerate(self.borders): #i_value is tuple - (x, y)
+			if amount_units:
+				for x_adder in range(-1, 2):
+					#seriosly?
+					for y_adder in range(-1, 2):
+						#I warned you!
+						try:
+							if mainobj.country_by_colour.get(mainobj.map[i_value[0] + x_adder][i_value[1] + y_adder]) in self.enemies:
+								if amount_units: # ... is not zero
+									result.append((i_value[0] + x_adder, i_value[1] + y_adder))
+									self.attacked_pixels_to_check.append((i_value[0] + x_adder, i_value[1] + y_adder) )
+									self.pixels_on_borders_to_delete.append((i_index, i_value))
+									amount_units -= 1
+						except IndexError:
+							pass
+			else:
+				break
+		print(self.name, len(result), amount_units)
+		if amount_units and result:
+			self.borders = self.search_borders_from_zero(mainobj)
+			result += self.attack2(mainobj, amount_units)
+		return result
+	def refresh_borders(self, mainobj):
+#![CHECK PIXEL_ON_CHECKING]
+		for pixel_on_checking in self.attacked_pixels_to_check:
+			if mainobj.country_by_colour.get(mainobj.map[pixel_on_checking[0]][pixel_on_checking[1]] != self.name):
+				break
+			for x_adder_of_checked_pixel in range(-1, 2):
+				for y_adder_of_checked_pixel in range(-1, 2):
+					pixel_on_checking_of_checked_pixel = mainobj.country_by_colour.get(mainobj.map[pixel_on_checking[0] + x_adder_of_checked_pixel][pixel_on_checking[1] + y_adder_of_checked_pixel]) # name of country as str
+					if pixel_on_checking_of_checked_pixel != self.name:
+						self.borders.add(pixel_on_checking)
+#![CHECK I_VALUE]
+		for i_index, i_value in self.pixels_on_borders_to_delete:
+			switcher = True # if False then we don't touch to i_value, else delete from self.borders
+			if mainobj.country_by_colour.get(mainobj.map[i_value[0]][i_value[1]]) != self.name:
+				self.borders.discard(i_value)
+				break
+			for x_adder in range(-1, 2):
+				for y_adder in range(-1, 2):
+					if mainobj.country_by_colour.get(mainobj.map[i_value[0] + x_adder][i_value[1] + y_adder]) != self.name:
+						switcher = False
+			if switcher:
+				self.borders.discard(i_value)
+
+
 	def attack(self, mainobj, amount_units:int):
 		result = list()
 		print(self.name, amount_units)

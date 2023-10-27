@@ -37,7 +37,9 @@ class Main:
 
 	def loop(self): # recursive function for turns
 		for country in self.countryset:
-			data = country.turn(self, randint(0, 100))
+			data = country.turn(self, randint(0, country.power))
+			# for to_refresh_country in self.countryset:
+			# 	to_refresh_country.refresh_borders(self)
 			for i in data:
 				if i is not None:
 					self.place_unit(i[0], i[1], country.colour)
@@ -66,7 +68,7 @@ class Main:
 			for country in unpacked_countries:
 				player = ...
 				if country['type'] == 'bot':
-					player = Bot(country['name'], country['colour'])
+					player = Bot(country['name'], country['colour'], country['power'])
 				#elif country['type'] == 'user':
 				#	player = User(country['name'], country['colour'])
 				player.enemies = country['enemies']
@@ -92,10 +94,14 @@ class Main:
 			"#6790a8": "Sea",
 			"#864747": "Britain",
 			"#457540": "Russian empire",
-			"#373737": "German empire"
+			"#373737": "German empire",
+			"#444a85": "France",
+			"#ccbb2e": "Austrian empire",
 		}
 main = Main(3, width=1600, height=900)
 main.place_canvas()
 main.unpack('scenario/1914')
 main.init_map('scenario/1914')
+for country in main.countryset:
+	country.borders = country.search_borders_from_zero(main)
 main.window.mainloop()

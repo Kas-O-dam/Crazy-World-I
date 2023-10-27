@@ -4,6 +4,7 @@
 		"name": "German empire",
 		"colour": "#373737",
 		"allies": ["Austrian empire", "Italy"],
+		"power": 250,
 		"enemies": ["Britain", "Russian empire", "France", "Serbia"],
 		"non-aggression pacts": [],
 		"right of passage": [],
@@ -21,6 +22,7 @@
 		"name": "Britain",
 		"colour": "#864747",
 		"allies": ["Russian empire", "France", "Serbia"],
+		"power": 240,
 		"enemies": ["German empire", "Austrian empire", "Italy"],
 		"non-aggression pacts": [],
 		"right of passage": [],
@@ -38,6 +40,7 @@
 		"name": "Russian empire",
 		"colour": "#457540",
 		"allies": ["Britain", "France", "Serbia"],
+		"power": 180,
 		"enemies": ["German empire", "Austrian empire"],
 		"non-aggression pacts": [],
 		"right of passage": [],
@@ -47,6 +50,42 @@
 			"Serbia": 98,
 			"France": 35,
 			"Austrian empire": -50,
+			"Italy": -10
+		}
+	},
+	{
+		"type": "bot",
+		"name": "France",
+		"colour": "#444a85",
+		"allies": ["Russian empire", "Britain", "Serbia"],
+		"power": 220,
+		"enemies": ["German empire", "Austrian empire", "Italy"],
+		"non-aggression pacts": [],
+		"right of passage": [],
+		"relationships": {
+			"German empire": -14,
+			"Russian empire": 32,
+			"Austrian empire": -51,
+			"Serbia": 2,
+			"Britain": 32,
+			"Italy": -46
+		}
+	},
+	{
+		"type": "bot",
+		"name": "Austrian empire",
+		"colour": "#ccbb2e",
+		"allies": ["German empire", "Italy"],
+		"power": 150,
+		"enemies": ["Britain", "Russian empire]", "Serbia", "France"],
+		"non-aggression pacts": [],
+		"right of passage": [],
+		"relationships": {
+			"German empire": 79,
+			"Russian empire": -25,
+			"France": -61,
+			"Serbia": -95,
+			"Britain": -12,
 			"Italy": -10
 		}
 	}
