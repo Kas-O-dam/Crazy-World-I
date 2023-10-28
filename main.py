@@ -20,6 +20,8 @@ class Main:
 	def place_canvas(self):
 		self.canvas.place(x = 0, y = 0)
 		self.turn_button[0].place(x = 0, y = 0)
+		self.view_button[0].place(x = 70, y = 0)
+
 	#place unit (pixel but with custom sizes)
 	def place_unit(self, x:int, y:int, colour:str):
 		return self.canvas.create_rectangle(x * self.unit_size, y * self.unit_size, x * self.unit_size + self.unit_size, y * self.unit_size + self.unit_size, width = 0, fill = colour)
@@ -37,14 +39,24 @@ class Main:
 
 	def loop(self): # recursive function for turns
 		for country in self.countryset:
-			data = country.turn(self, randint(0, country.power))
-			# for to_refresh_country in self.countryset:
-			# 	to_refresh_country.refresh_borders(self)
+			data = list()
+			country.stayed_units = randint(0, country.power)
+			while country.stayed_units:
+				data += country.turn(self, country.stayed_units) # when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
+				if not data: break
+				for i in data:
+					if i is not None:
+						self.place_unit(i[0], i[1], country.colour)
+						self.map[i[0]][i[1]] = country.colour
+
+	def view_loop(self): # for debug
+		for country in self.countryset:
+			data = list()
+			data += country.borders_view(self, country.stayed_units)
 			for i in data:
 				if i is not None:
-					self.place_unit(i[0], i[1], country.colour)
-					self.map[i[0]][i[1]] = country.colour
-	# for PIL
+					self.place_unit(i[0], i[1], 'magenta')
+
 	def rgb_to_hex(self, rgb:tuple):
 		if not rgb[3]: return self.colour_sea
 		return '#{:02x}{:02x}{:02x}'.format(rgb[0], rgb[1], rgb[2])
@@ -87,6 +99,7 @@ class Main:
 		self.window.geometry(f'{self.width}x{self.height}')
 		self.canvas  = tk.Canvas(width = self.width, height = self.height, bg = self.colour_sea)
 		self.turn_button = tk.Button(text="Turn", command=self.loop, width=2, height=1),
+		self.view_button = tk.Button(text="Borders", command=self.view_loop, width=3, height=1),
 		#self.Object["menu-block"].insert(INSERT, "Hi")
 		#self.Object["menu-block"].config(state=DISABLED)
 		self.countryset = set()

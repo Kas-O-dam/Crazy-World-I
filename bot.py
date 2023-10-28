@@ -1,4 +1,5 @@
 from random import randint
+from random import choice
 
 class Bot:
 	def __init__(self, country:str, colour:tuple, power:int):
@@ -14,12 +15,20 @@ class Bot:
 		self.attacked_pixels_to_check = list()
 		self.pixels_on_borders_to_delete = list()
 		self.update_borders_counter = 0
+		self.stayed_units = int()
 
 	def turn(self, mainobj, amount_units:int):
 		self.borders = self.search_borders_from_zero(mainobj)
 		#print(f"[ S ] {self.name}, {amount_units}")
 		return self.attack2(mainobj, amount_units)
 	
+	def borders_view(self, mainobj, amount_units:int):
+		self.borders = self.search_borders_from_zero(mainobj)
+		self.stayed_units = 0
+		return list(self.borders)
+
+
+
 	# functions 'propose', 'relate' and 'attack' only return results, then 'Main' will set those to properties and files
 	
 	def relate(self, reciever):
@@ -47,19 +56,24 @@ class Bot:
 		end_list = set()
 		for x in enumerate(mainobj.map):
 			for y in enumerate(x[1]):
+				#print(x[0], y[0])
 				try:
 					if mainobj.country_by_colour.get(mainobj.map[x[0]][y[0]], "") == self.name:
 						for x_adder in range(-1, 2):
 							for y_adder in range(-1, 2):
 								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") in self.enemies:
 									end_list.add((x[0], y[0]))
+									assert ""# it's only for killing two last cycles
 					else: continue
-				except IndexError: continue
+				except (IndexError, AssertionError): continue
 		return end_list
 	def attack2(self, mainobj, amount_units:int): # STOP! This code is very hard for understand. Do you really want to continue?
 		result = list()
 	#![MAIN CYCLE]
-		for i_index, i_value in enumerate(self.borders): #i_value is tuple - (x, y)
+		if self.borders: lborders = list(self.borders)
+		else: return result
+		while True:
+			i_value = choice(lborders)#i_value is tuple - (x, y)
 			if amount_units:
 				for x_adder in range(-1, 2):
 					#seriosly?
@@ -69,17 +83,15 @@ class Bot:
 							if mainobj.country_by_colour.get(mainobj.map[i_value[0] + x_adder][i_value[1] + y_adder]) in self.enemies:
 								if amount_units: # ... is not zero
 									result.append((i_value[0] + x_adder, i_value[1] + y_adder))
-									self.attacked_pixels_to_check.append((i_value[0] + x_adder, i_value[1] + y_adder) )
-									self.pixels_on_borders_to_delete.append((i_index, i_value))
+									# self.attacked_pixels_to_check.append((i_value[0] + x_adder, i_value[1] + y_adder) )
+									# self.pixels_on_borders_to_delete.append((i_index, i_value))
 									amount_units -= 1
 						except IndexError:
 							pass
 			else:
 				break
 		print(self.name, len(result), amount_units)
-		if amount_units and result:
-			self.borders = self.search_borders_from_zero(mainobj)
-			result += self.attack2(mainobj, amount_units)
+		self.stayed_units = amount_units
 		return result
 	def refresh_borders(self, mainobj):
 #![CHECK PIXEL_ON_CHECKING]
