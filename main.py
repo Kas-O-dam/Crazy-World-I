@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from json import loads
+from json import load
 from json import dumps
 from time import sleep
 from random import randint
@@ -42,12 +43,11 @@ class Main:
 			data = list()
 			country.stayed_units = randint(0, country.power)
 			while country.stayed_units:
-				data += country.turn(self, country.stayed_units) # when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
-				if not data: break
+				data = country.turn(self, country.stayed_units) # when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
+				if not data: break # if country hasn't borders with enemie
 				for i in data:
-					if i is not None:
-						self.place_unit(i[0], i[1], country.colour)
-						self.map[i[0]][i[1]] = country.colour
+					self.place_unit(i[0], i[1], country.colour)
+					self.map[i[0]][i[1]] = country.colour
 
 	def view_loop(self): # for debug
 		for country in self.countryset:
@@ -61,9 +61,9 @@ class Main:
 		if not rgb[3]: return self.colour_sea
 		return '#{:02x}{:02x}{:02x}'.format(rgb[0], rgb[1], rgb[2])
 	# convert from png to tkinter's canvas and save to self.map	
-	def init_map(self, path:str):
+	def init_map(self):
 		self.map = []
-		with Image.open(path + '/map.png') as self.png:
+		with Image.open(self.scenario_path + '/map.png') as self.png:
 			self.png.mode = 'RGBA'
 			self.premap = self.png.load()
 			for x in range(self.png.width):
@@ -74,8 +74,8 @@ class Main:
 	def pack(self, path:str):
 		...
 	#some work with game saving (config/countryset.json)
-	def unpack(self, path:str): #work with json/yaml
-		with open(f'{path}/config.json', 'r') as file: # [{name: str, colour: str, allies:list, enemies: list, et cetera}]
+	def unpack(self): #work with json/yaml
+		with open(f'{self.scenario_path}/country-set.json', 'r') as file: # [{name: str, colour: str, allies:list, enemies: list, et cetera}]
 			unpacked_countries = loads(file.read())
 			for country in unpacked_countries:
 				player = ...
@@ -90,11 +90,12 @@ class Main:
 				player.relationships = country['relationships']
 				self.countryset.add(player)
 		return True
-	def __init__(self, unit_size:int, width = 1600, height = 900):
+	def __init__(self, unit_size:int, path:str, width = 1600, height = 900):
 		self.width = width
 		self.height = height
 		self.unit_size = unit_size
 		self.colour_sea = '#6790a8'
+		self.scenario_path = path
 		self.window = tk.Tk()
 		self.window.geometry(f'{self.width}x{self.height}')
 		self.canvas  = tk.Canvas(width = self.width, height = self.height, bg = self.colour_sea)
@@ -103,18 +104,12 @@ class Main:
 		#self.Object["menu-block"].insert(INSERT, "Hi")
 		#self.Object["menu-block"].config(state=DISABLED)
 		self.countryset = set()
-		self.country_by_colour = {
-			"#6790a8": "Sea",
-			"#864747": "Britain",
-			"#457540": "Russian empire",
-			"#373737": "German empire",
-			"#444a85": "France",
-			"#ccbb2e": "Austrian empire",
-		}
-main = Main(3, width=1600, height=900)
+		with open('{}/country-by-colour.json'.format(self.scenario_path), 'r') as JSON:
+			self.country_by_colour = load(JSON)
+main = Main(3, 'scenario/1914', width=1600, height=900)
 main.place_canvas()
-main.unpack('scenario/1914')
-main.init_map('scenario/1914')
+main.unpack()
+main.init_map()
 for country in main.countryset:
 	country.borders = country.search_borders_from_zero(main)
 main.window.mainloop()

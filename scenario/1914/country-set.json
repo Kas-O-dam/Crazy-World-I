@@ -77,7 +77,7 @@
 		"colour": "#ccbb2e",
 		"allies": ["German empire", "Italy"],
 		"power": 150,
-		"enemies": ["Britain", "Russian empire]", "Serbia", "France"],
+		"enemies": ["Britain", "Russian empire", "Serbia", "France"],
 		"non-aggression pacts": [],
 		"right of passage": [],
 		"relationships": {

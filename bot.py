@@ -1,5 +1,5 @@
 from random import randint
-from random import choice
+from random import shuffle
 
 class Bot:
 	def __init__(self, country:str, colour:tuple, power:int):
@@ -11,7 +11,7 @@ class Bot:
 		self.non_aggression_pacts = set()
 		self.right_of_passage = set()
 		self.relationships = set()	
-		self.borders = set() # variable for save set of pixels in borders
+		self.borders = list() # variable for save set of pixels in borders
 		self.attacked_pixels_to_check = list()
 		self.pixels_on_borders_to_delete = list()
 		self.update_borders_counter = 0
@@ -35,7 +35,7 @@ class Bot:
 		if reciever in self.enemies:
 			return False
 		else:
-			return randint(0, 10)
+			return randint(1, 10)
 
 	def propose(self, receiver, action):
 		match action:
@@ -53,7 +53,7 @@ class Bot:
 				return False
 	def search_borders_from_zero(self, mainobj): # This function need to get coordinates about all pixels next to the other countries as set and then updating data everyone turn
 		#print(f'[ S ] Updating borders for \033[33m{self.name}\033[0m')
-		end_list = set()
+		end_list = list()
 		for x in enumerate(mainobj.map):
 			for y in enumerate(x[1]):
 				#print(x[0], y[0])
@@ -61,24 +61,20 @@ class Bot:
 					if mainobj.country_by_colour.get(mainobj.map[x[0]][y[0]], "") == self.name:
 						for x_adder in range(-1, 2):
 							for y_adder in range(-1, 2):
-								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") in self.enemies:
-									end_list.add((x[0], y[0]))
-									assert ""# it's only for killing two last cycles
+								if mainobj.country_by_colour.get(mainobj.map[x[0] + x_adder][y[0] + y_adder], "") in self.enemies and not((x[0], y[0]) in end_list):
+									end_list.append((x[0], y[0]))
+									assert True
 					else: continue
 				except (IndexError, AssertionError): continue
+		shuffle(end_list) #mixing for randomization
 		return end_list
-	def attack2(self, mainobj, amount_units:int): # STOP! This code is very hard for understand. Do you really want to continue?
+	def attack2(self, mainobj, amount_units:int):
 		result = list()
 	#![MAIN CYCLE]
-		if self.borders: lborders = list(self.borders)
-		else: return result
-		while True:
-			i_value = choice(lborders)#i_value is tuple - (x, y)
+		for i_value in self.borders:
 			if amount_units:
 				for x_adder in range(-1, 2):
-					#seriosly?
 					for y_adder in range(-1, 2):
-						#I warned you!
 						try:
 							if mainobj.country_by_colour.get(mainobj.map[i_value[0] + x_adder][i_value[1] + y_adder]) in self.enemies:
 								if amount_units: # ... is not zero
