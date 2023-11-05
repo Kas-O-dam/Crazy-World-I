@@ -73,8 +73,11 @@ class Main:
 					self.map[len(self.map) - 1].append(self.rgb_to_hex(self.premap[x, y]))
 	def pack(self, path:str):
 		...
-	#some work with game saving (config/countryset.json)
+	#some work with game saving (scenario/1914/country-set.json)
 	def unpack(self): #work with json/yaml
+		empires = dict()
+		with open(f'{self.scenario_path}/empires.json', 'r'):
+			empires = dump()
 		with open(f'{self.scenario_path}/country-set.json', 'r') as file: # [{name: str, colour: str, allies:list, enemies: list, et cetera}]
 			unpacked_countries = loads(file.read())
 			for country in unpacked_countries:
@@ -89,7 +92,6 @@ class Main:
 				player.right_of_passage = country['right of passage']
 				player.relationships = country['relationships']
 				self.countryset.add(player)
-		return True
 	def __init__(self, unit_size:int, path:str, width = 1600, height = 900):
 		self.width = width
 		self.height = height
@@ -99,6 +101,7 @@ class Main:
 		self.window = tk.Tk()
 		self.window.geometry(f'{self.width}x{self.height}')
 		self.canvas  = tk.Canvas(width = self.width, height = self.height, bg = self.colour_sea)
+		self.canvas.bind('<Button-1>', lambda event: print(self.country_by_colour[self.map[event.x//self.unit_size][event.y//self.unit_size]], event.x//self.unit_size, event.y//self.unit_size))
 		self.turn_button = tk.Button(text="Turn", command=self.loop, width=2, height=1),
 		self.view_button = tk.Button(text="Borders", command=self.view_loop, width=3, height=1),
 		#self.Object["menu-block"].insert(INSERT, "Hi")

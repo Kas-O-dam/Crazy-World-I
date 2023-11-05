@@ -1,31 +1,37 @@
 from random import randint
 from random import shuffle
+from random import random
 
 class Bot:
 	def __init__(self, country:str, colour:tuple, power:int):
 		self.name = country
 		self.colour = colour
 		self.power = power
+
 		self.enemies = set()
 		self.allies = set()
 		self.non_aggression_pacts = set()
 		self.right_of_passage = set()
-		self.relationships = set()	
-		self.borders = list() # variable for save set of pixels in borders
+		self.relationships = set()
+
+		self.diplomaty_cancel = 0.0 # for limit diplomaty requests
+		self.diplomaty_cancel_step = 0.0 # speed of turn of limit
+
+		self.fronts = list() # variable for save set of pixels in borders
 		self.attacked_pixels_to_check = list()
 		self.pixels_on_borders_to_delete = list()
 		self.update_borders_counter = 0
 		self.stayed_units = int()
 
 	def turn(self, mainobj, amount_units:int):
-		self.borders = self.search_borders_from_zero(mainobj)
+		self.fronts = self.search_borders_from_zero(mainobj)
 		#print(f"[ S ] {self.name}, {amount_units}")
 		return self.attack2(mainobj, amount_units)
 	
 	def borders_view(self, mainobj, amount_units:int):
-		self.borders = self.search_borders_from_zero(mainobj)
+		self.fronts = self.search_borders_from_zero(mainobj)
 		self.stayed_units = 0
-		return list(self.borders)
+		return list(self.fronts)
 
 
 
@@ -33,21 +39,53 @@ class Bot:
 	
 	def relate(self, reciever):
 		if reciever in self.enemies:
-			return False
+			return 0
 		else:
-			return randint(1, 10)
+			if random() < 0.1:
+				return randint(1, 10)
 
-	def propose(self, receiver, action):
+	def propose(self, receiver, action:str):
+		# here you can see randomizing shit
+		if random() > 0.5:
+			return False # по приколу (ru)
+		alliance_probability = 0.0
+		non_agression_pact_probability = 0.0
+		right_of_passage_probability = 0.0
+		declare_war_probability = 0.0
 		match action:
-			# Yes, it's not interesting, __now__, without rand lib, without dependencies from other factors... 
-			case 'union':
-				if not (receiver in self.allies):
+			case 'alliance':
+				if self.relationships[receiver.name] > randint(40, 100):
+					alliance_probability += 0.06
+				if len(list(set(self.enemies) & set(receiver.enemies))) >= len(self.enemies) // 2:#if we have more then half similar enemies/allies...
+					alliance_probability += 0.095
+				if len(list(set(self.allies) & set(receiver.allies))) >= len(self.allies) // 2:# ^^higher^^
+					alliance_probability += 0.090
+				if not(receiver.name in self.allies) and not(receiver.name in self.enemies) and random() < alliance_probability:
 					return True
 			case 'non-aggression pact':
-				if not (receiver in self.non_aggression_pacts):
+				if self.relationships[reciever.name] > randint(-90, -40):
+					non_agression_pact_probability += 0.032
+				if self.enemies: # ... is not empty
+					non_agression_pact_probability += 0.25
+				if reciever.name in self.allies:
+					non_agression_pact_probability += 0.33
+				if not(receiver.name in self.non_aggression_pacts) and not(receiver.name in self.enemies) and random() < non_agression_pact_probability:
 					return True
 			case 'right of passage':
-				if not (receiver in self.right_of_passage):
+				if self.relationships[reciever.name] > randint(0, 20):
+					right_of_passage_probability += 0.3
+				if reciever.name in self.allies:
+					right_of_passage_probability += 0.2
+				if list(set(self.enemies) & set(self.enemies)):
+					right_of_passage_probability += 0.15
+				if not(receiver.name in self.right_of_passage) and not(receiver.name in self.enemies) and random() < right_of_passage_probability:
+					return True
+			case "declare war":
+				if list(set(reciever.enemies) & set(self.allies)):
+					declare_war_probability += 0.45
+				if self.relationships[reciever.name] < randint(-100, -60):
+					declare_war_probability += 0.2
+				if not(reciever.name in self.allies) and not(reciever.name in self.enemies) and random() < declare_war_probability:
 					return True
 			case _ :
 				return False
@@ -71,7 +109,7 @@ class Bot:
 	def attack2(self, mainobj, amount_units:int):
 		result = list()
 	#![MAIN CYCLE]
-		for i_value in self.borders:
+		for i_value in self.fronts:
 			if amount_units:
 				for x_adder in range(-1, 2):
 					for y_adder in range(-1, 2):
@@ -89,120 +127,3 @@ class Bot:
 		print(self.name, len(result), amount_units)
 		self.stayed_units = amount_units
 		return result
-	def refresh_borders(self, mainobj):
-#![CHECK PIXEL_ON_CHECKING]
-		for pixel_on_checking in self.attacked_pixels_to_check:
-			if mainobj.country_by_colour.get(mainobj.map[pixel_on_checking[0]][pixel_on_checking[1]] != self.name):
-				break
-			for x_adder_of_checked_pixel in range(-1, 2):
-				for y_adder_of_checked_pixel in range(-1, 2):
-					pixel_on_checking_of_checked_pixel = mainobj.country_by_colour.get(mainobj.map[pixel_on_checking[0] + x_adder_of_checked_pixel][pixel_on_checking[1] + y_adder_of_checked_pixel]) # name of country as str
-					if pixel_on_checking_of_checked_pixel != self.name:
-						self.borders.add(pixel_on_checking)
-#![CHECK I_VALUE]
-		for i_index, i_value in self.pixels_on_borders_to_delete:
-			switcher = True # if False then we don't touch to i_value, else delete from self.borders
-			if mainobj.country_by_colour.get(mainobj.map[i_value[0]][i_value[1]]) != self.name:
-				self.borders.discard(i_value)
-				break
-			for x_adder in range(-1, 2):
-				for y_adder in range(-1, 2):
-					if mainobj.country_by_colour.get(mainobj.map[i_value[0] + x_adder][i_value[1] + y_adder]) != self.name:
-						switcher = False
-			if switcher:
-				self.borders.discard(i_value)
-
-
-	def attack(self, mainobj, amount_units:int):
-		result = list()
-		print(self.name, amount_units)
-		def search(amount_units:int):
-			# we have the four ways
-			#      north
-			#        ^
-			#        |
-			#west <-- --> east
-			#        |
-			#       \_/
-			#     south
-			# and search, for example, from west-north to east-south
-			# is samply, what very bad. The front will be like that:
-			#z0000000000000000000000000000000
-			#zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz00000
-			#zzzzzz             00000000000000000
-			# one unrealistic line, because we need randomizing way everyone turn
-			
-			# [WAY-RANDOMIZE]
-			end_horizontal = [mainobj.width, 0][randint(0, 1)]
-			end_vertical = [mainobj.height, 0][randint(0, 1)]
-			start_horizontal = int()
-			start_vertical = int()
-			step_vertical = int()
-			step_horizontal = int()
-			match end_horizontal:
-				case 0:
-					step_horizontal = -1
-					start_horizontal = mainobj.width
-				case mainobj.width:
-					step_horizontal = +1
-					start_horizontal = 0
-			match end_vertical:
-				case 0:
-					step_vertical = -1
-					start_vertical = mainobj.height
-				case mainobj.height:
-					step_vertical = +1
-					start_vertical = 0
-			# /[WAY-RANDOMIZE] => { 
-			# 	start_vertical || end_vertical = mainobj.height || 0
-			# 	&&
-			# 	start_horizontal || end_horizontal = mainobj.width || 0
-			#	&&
-			#	step_(vertical || horizontal) = 1 || -1
-			# }
-			
-			# yeees, four-level cycle!
-
-			# [RUN-ON-CANVA]
-			way = randint(0, 2)
-			if way:
-				for x in range(start_horizontal, end_horizontal, step_horizontal):
-					for y in range(start_vertical, end_vertical, step_vertical):
-						try:
-							if mainobj.country_by_colour.get(mainobj.map[x][y], "") == self.name: # here returning :(
-								#print(x, y, mainobj.country_by_colour[mainobj.map[x][y]], end=" ")
-								for x_adder in range(-1, 2): # here we shall check everyone tile next to the checking tile
-									if randint(0, 3): continue
-									for y_adder in range(-1, 2):
-										if randint(0, 3): continue
-										if mainobj.country_by_colour.get(mainobj.map[x + x_adder][y + y_adder], "") in self.enemies:
-											#print(f"writed: {x + x_adder}:{y + y_adder}")
-											amount_units -= 1
-											return (x + x_adder, y + y_adder), amount_units
-							else: continue
-						except IndexError: continue
-			else:
-				for y in range(start_horizontal, end_horizontal, step_horizontal):
-					for x in range(start_vertical, end_vertical, step_vertical):
-						try:
-							if mainobj.country_by_colour.get(mainobj.map[x][y], "") == self.name: # here returning :(
-								#print(x, y, mainobj.country_by_colour[mainobj.map[x][y]], end=" ")
-								for x_adder in range(-1, 2): # here we shall check everyone tile next to the checking tile
-									if randint(0, 3): continue
-									for y_adder in range(-1, 2):
-										if randint(0, 3): continue
-										if mainobj.country_by_colour.get(mainobj.map[x + x_adder][y + y_adder], "") in self.enemies:
-											#print(f"writed: {x + x_adder}:{y + y_adder}")
-											amount_units -= 1
-											return (x + x_adder, y + y_adder), amount_units
-							else: continue
-						except IndexError: continue
-			# /[RUN-ON-CANVA] => tuple(x, y) & amount_units
-			return False, 0
-		while amount_units:
-			some, amount_units = search(amount_units)
-			if some:
-				result.append(some)
-		
-		return result
-		

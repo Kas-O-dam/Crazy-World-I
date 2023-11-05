@@ -1,0 +1,1 @@
+The directory "empires" need for keep the countries in the true lands. For example, when war is start Germany can take Moscow and all Russia, but fail in motherland from Vurtenburg to Brandenburg, what is country? Germany in Poland-Russia, but without Germany. With there is PNGs we can unite "self.fronts" and "main_pixels" to fighting in right way
