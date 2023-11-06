@@ -9,14 +9,10 @@ from PIL import Image
 
 # import from local scripts
 from bot import Bot
+from shell_errors import *
 #from user import User
 
 class Main:
-	class SizeWarning():
-		def __init__(self, size:tuple):
-			self.name = 'SizeWarning'
-		def __str__(self):
-			return f'\033[34m{self.name}\033[0m: width ({size[0]}) isn\'t equal height ({size[1]}), height will assign mean from width'
 	# place canva
 	def place_canvas(self):
 		self.canvas.place(x = 0, y = 0)
@@ -71,13 +67,14 @@ class Main:
 				for y in range(self.png.height):
 					self.place_unit(x, y, self.rgb_to_hex(self.premap[x, y]))
 					self.map[len(self.map) - 1].append(self.rgb_to_hex(self.premap[x, y]))
+		self.__delattr__("png")
+		self.__delattr__("premap")
 	def pack(self, path:str):
 		...
-	#some work with game saving (scenario/1914/country-set.json)
 	def unpack(self): #work with json/yaml
 		empires = dict()
-		with open(f'{self.scenario_path}/empires.json', 'r'):
-			empires = dump()
+		with open(f'{self.scenario_path}/empires.json', 'r') as empires_JSON:
+			empires = loads(empires_JSON.read())
 		with open(f'{self.scenario_path}/country-set.json', 'r') as file: # [{name: str, colour: str, allies:list, enemies: list, et cetera}]
 			unpacked_countries = loads(file.read())
 			for country in unpacked_countries:
@@ -91,6 +88,7 @@ class Main:
 				player.non_aggression_pacts = country['non-aggression pacts']
 				player.right_of_passage = country['right of passage']
 				player.relationships = country['relationships']
+				player.empire = list(map(tuple, empires[player.name]))
 				self.countryset.add(player)
 	def __init__(self, unit_size:int, path:str, width = 1600, height = 900):
 		self.width = width
