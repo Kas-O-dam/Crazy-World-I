@@ -1,5 +1,6 @@
 from random import randint
 from random import shuffle
+from random import choice
 from random import random
 
 class Bot:
@@ -23,10 +24,15 @@ class Bot:
 		self.update_borders_counter = 0
 		self.stayed_units = int()
 
+	def __repr__(self):
+		return f'''Bot player(country={self.name}, colour={self.colour})'''
+
 	def turn(self, mainobj, amount_units:int):
 		self.fronts = self.search_borders_from_zero(mainobj)
-		#print(f"[ S ] {self.name}, {amount_units}")
-		return self.attack2(mainobj, amount_units)
+		result = dict()
+		result["attack"] = self.attack2(mainobj, amount_units)
+		result["propose"] = self.propose(choice(tuple(mainobj.countryset)), choice(("allie", "non-aggression pact", "right of passage", "declare war")))
+		return result
 	
 	def borders_view(self, mainobj, amount_units:int):
 		self.fronts = self.search_borders_from_zero(mainobj)
@@ -37,8 +43,8 @@ class Bot:
 
 	# functions 'propose', 'relate' and 'attack' only return results, then 'Main' will set those to properties and files
 	
-	def relate(self, reciever):
-		if reciever in self.enemies:
+	def relate(self, receiver):
+		if receiver in self.enemies:
 			return 0
 		else:
 			if random() < 0.1:
@@ -46,6 +52,8 @@ class Bot:
 
 	def propose(self, receiver, action:str):
 		# here you can see randomizing shit
+		if receiver.name == self.name:
+			return False
 		if random() > 0.5:
 			return False # по приколу (ru)
 		alliance_probability = 0.0
@@ -61,41 +69,41 @@ class Bot:
 			if len(list(set(self.allies) & set(receiver.allies))) >= len(self.allies) // 2:# ^^higher^^
 				alliance_probability += 0.090
 			if not(receiver.name in self.allies) and not(receiver.name in self.enemies) and random() < alliance_probability:
-				return True
+				return (action, receiver)
 			else:
 				return False
 #![NON-AGGRESION PACT]
 		elif action == 'non-aggression pact':
-			if self.relationships[reciever.name] > randint(-90, -40):
+			if self.relationships[receiver.name] > randint(-90, -40):
 				non_agression_pact_probability += 0.032
 			if self.enemies: # ... is not empty
 				non_agression_pact_probability += 0.25
-			if reciever.name in self.allies:
+			if receiver.name in self.allies:
 				non_agression_pact_probability += 0.33
 			if not(receiver.name in self.non_aggression_pacts) and not(receiver.name in self.enemies) and random() < non_agression_pact_probability:
-				return True
+				return (action, receiver)
 			else:
 				return False
 #![RIGHT OF PASSAGE]
 		elif action == 'right of passage':
-			if self.relationships[reciever.name] > randint(0, 20):
+			if self.relationships[receiver.name] > randint(0, 20):
 				right_of_passage_probability += 0.3
-			if reciever.name in self.allies:
+			if receiver.name in self.allies:
 				right_of_passage_probability += 0.2
 			if list(set(self.enemies) & set(self.enemies)):
 				right_of_passage_probability += 0.15
 			if not(receiver.name in self.right_of_passage) and not(receiver.name in self.enemies) and random() < right_of_passage_probability:
-				return True
+				return (action, receiver)
 			else:
 				return False
 #![DECLARE WAR]
 		elif action == "declare war":
-			if list(set(reciever.enemies) & set(self.allies)):
+			if list(set(receiver.enemies) & set(self.allies)):
 				declare_war_probability += 0.45
-			if self.relationships[reciever.name] < randint(-100, -60):
+			if self.relationships[receiver.name] < randint(-100, -60):
 				declare_war_probability += 0.2
-			if not(reciever.name in self.allies) and not(reciever.name in self.enemies) and random() < declare_war_probability:
-				return True
+			if not(receiver.name in self.allies) and not(receiver.name in self.enemies) and random() < declare_war_probability:
+				return (action, receiver)
 			else:
 				return False
 		else:

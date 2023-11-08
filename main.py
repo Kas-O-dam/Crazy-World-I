@@ -6,6 +6,7 @@ from json import dumps
 from time import sleep
 from random import randint
 from PIL import Image
+from icecream import ic
 
 # import from local scripts
 from bot import Bot
@@ -36,14 +37,35 @@ class Main:
 
 	def loop(self): # recursive function for turns
 		for country in self.countryset:
-			data = list()
+			data = dict()
+			# data = {
+			# 	"attack": [(x1, y1), (x2, y2)...],
+			# 	"propose": (what proposed, to who proposed)
+			# }
 			country.stayed_units = randint(0, country.power)
 			while country.stayed_units:
 				data = country.turn(self, country.stayed_units) # when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
-				if not data: break # if country hasn't borders with enemie
-				for i in data:
+				if not data["attack"]: break # if country hasn't borders with enemie
+				for i in data["attack"]:
 					self.place_unit(i[0], i[1], country.colour)
 					self.map[i[0]][i[1]] = country.colour
+			if data.get("propose", False):
+				if data["propose"][0] == "declare war":
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mdeclare war to\033[33m", data["propose"][1].name, "\033[0m")
+					data["propose"][1].enemies.add(country.name)
+					country.enemies.add(data["propose"][1])
+				elif data["propose"][0] == "allie":
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate allie with\033[33m", data["propose"][1].name, "\033[0m")
+					data["propose"][1].allies.add(country.name)
+					country.allies.add(data["propose"][1])
+				elif data["propose"][0] == "right of passage":
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate right of passage with\033[33m", data["propose"][1].name, "\033[0m")
+					data["propose"][1].right_of_passage.add(country.name)
+					country.right_of_passage.add(data["propose"][1])
+				elif data["propose"][0] == "non-aggression pact":
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate non-aggression pact with\033[33m", data["propose"][1].name, "\033[0m")
+					data["propose"][1].non_aggression_pacts.add(country.name)
+					country.non_aggression_pacts.add(data["propose"][1])
 
 	def view_loop(self): # for debug
 		for country in self.countryset:
@@ -83,10 +105,10 @@ class Main:
 					player = Bot(country['name'], country['colour'], country['power'])
 				#elif country['type'] == 'user':
 				#	player = User(country['name'], country['colour'])
-				player.enemies = country['enemies']
-				player.allies = country['allies']
-				player.non_aggression_pacts = country['non-aggression pacts']
-				player.right_of_passage = country['right of passage']
+				player.enemies = set(country['enemies'])
+				player.allies = set(country['allies'])
+				player.non_aggression_pacts = set(country['non-aggression pacts'])
+				player.right_of_passage = set(country['right of passage'])
 				player.relationships = country['relationships']
 				player.empire = list(map(tuple, empires[player.name]))
 				self.countryset.add(player)
