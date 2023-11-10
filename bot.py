@@ -2,6 +2,7 @@ from random import randint
 from random import shuffle
 from random import choice
 from random import random
+from icecream import ic
 
 class Bot:
 	def __init__(self, country:str, colour:tuple, power:int):
@@ -15,13 +16,10 @@ class Bot:
 		self.right_of_passage = set()
 		self.relationships = set()
 
-		self.diplomaty_cancel = 0.0 # for limit diplomaty requests
-		self.diplomaty_cancel_step = 0.0 # speed of turn of limit
-
 		self.fronts = list() # variable for save set of pixels in borders
 		self.attacked_pixels_to_check = list()
 		self.pixels_on_borders_to_delete = list()
-		self.update_borders_counter = 0
+		self.update_borders_counter = int()
 		self.stayed_units = int()
 
 	def __repr__(self):
@@ -32,6 +30,7 @@ class Bot:
 		result = dict()
 		result["attack"] = self.attack2(mainobj, amount_units)
 		result["propose"] = self.propose(choice(tuple(mainobj.countryset)), choice(("allie", "non-aggression pact", "right of passage", "declare war")))
+		result["relate"] = self.relate(choice(tuple(mainobj.countryset)))
 		return result
 	
 	def borders_view(self, mainobj, amount_units:int):
@@ -44,22 +43,31 @@ class Bot:
 	# functions 'propose', 'relate' and 'attack' only return results, then 'Main' will set those to properties and files
 	
 	def relate(self, receiver):
-		if receiver in self.enemies:
-			return 0
-		else:
-			if random() < 0.1:
-				return randint(1, 10)
-
-	def propose(self, receiver, action:str):
-		# here you can see randomizing shit
+		relation = int()
 		if receiver.name == self.name:
 			return False
-		if random() > 0.5:
-			return False # по приколу (ru)
-		alliance_probability = 0.0
-		non_agression_pact_probability = 0.0
-		right_of_passage_probability = 0.0
-		declare_war_probability = 0.0
+		if receiver.name in self.enemies and random() < 0.1:
+			relation += randint(-5, 0)
+		if receiver.name in self.allies and random() < 0.1:
+			relation += randint(0, 5)
+		if random() < 0.2:
+			relation += randint(-3, 3)
+		if self.relationships[receiver.name] > 0 and self.relationships[receiver.name] <= 100:
+			relation += randint(0, 4)
+		if self.relationships[receiver.name] < 0 and self.relationships[receiver.name] >= -100:
+			relation += randint(-4, 0)
+		if relation:
+			return (relation, receiver)
+		else:
+			return False
+
+	def propose(self, receiver, action:str):
+		if receiver.name == self.name:
+			return False
+		alliance_probability = float()
+		non_agression_pact_probability = float()
+		right_of_passage_probability = float()
+		declare_war_probability = float()
 #![ALLIANCE]
 		if action == 'alliance':
 			if self.relationships[receiver.name] > randint(40, 100):
@@ -79,7 +87,7 @@ class Bot:
 			if self.enemies: # ... is not empty
 				non_agression_pact_probability += 0.25
 			if receiver.name in self.allies:
-				non_agression_pact_probability += 0.33
+				non_agression_pact_probability = 0.0
 			if not(receiver.name in self.non_aggression_pacts) and not(receiver.name in self.enemies) and random() < non_agression_pact_probability:
 				return (action, receiver)
 			else:
@@ -87,11 +95,11 @@ class Bot:
 #![RIGHT OF PASSAGE]
 		elif action == 'right of passage':
 			if self.relationships[receiver.name] > randint(0, 20):
-				right_of_passage_probability += 0.3
+				right_of_passage_probability += 0.13
 			if receiver.name in self.allies:
-				right_of_passage_probability += 0.2
+				right_of_passage_probability += 0.12
 			if list(set(self.enemies) & set(self.enemies)):
-				right_of_passage_probability += 0.15
+				right_of_passage_probability += 0.05
 			if not(receiver.name in self.right_of_passage) and not(receiver.name in self.enemies) and random() < right_of_passage_probability:
 				return (action, receiver)
 			else:
@@ -106,8 +114,6 @@ class Bot:
 				return (action, receiver)
 			else:
 				return False
-		else:
-			return False
 	def search_borders_from_zero(self, mainobj): # This function need to get coordinates about all pixels next to the other countries as set and then updating data everyone turn
 		end_list = list()
 		for x in enumerate(mainobj.map):

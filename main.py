@@ -7,6 +7,7 @@ from time import sleep
 from random import randint
 from PIL import Image
 from icecream import ic
+from os import system
 
 # import from local scripts
 from bot import Bot
@@ -36,6 +37,7 @@ class Main:
 					place_unit((x, y, map[x_counter][y_counter]))
 
 	def loop(self): # recursive function for turns
+		system("clear")
 		for country in self.countryset:
 			data = dict()
 			# data = {
@@ -44,7 +46,8 @@ class Main:
 			# }
 			country.stayed_units = randint(0, country.power)
 			while country.stayed_units:
-				data = country.turn(self, country.stayed_units) # when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
+				data = country.turn(self, country.stayed_units)
+				# when the attack is relised and pixels were put, we need come back if have some "amount_units" yet
 				if not data["attack"]: break # if country hasn't borders with enemie
 				for i in data["attack"]:
 					self.place_unit(i[0], i[1], country.colour)
@@ -66,6 +69,13 @@ class Main:
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate non-aggression pact with\033[33m", data["propose"][1].name, "\033[0m")
 					data["propose"][1].non_aggression_pacts.add(country.name)
 					country.non_aggression_pacts.add(data["propose"][1])
+			if data.get("relate", False):
+				if data["relate"][0] > 0:
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0m relation to\033[33m", data["relate"][1].name, "\033[0mbecomes better per", data["relate"][0])
+				else:
+					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mrelation to\033[33m", data["relate"][1].name, "\033[0mbecomes worst per", data["relate"][0])
+				country.relationships[data["relate"][1].name] += data["relate"][0]
+				
 
 	def view_loop(self): # for debug
 		for country in self.countryset:
