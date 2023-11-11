@@ -56,19 +56,19 @@ class Main:
 				if data["propose"][0] == "declare war":
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mdeclare war to\033[33m", data["propose"][1].name, "\033[0m")
 					data["propose"][1].enemies.add(country.name)
-					country.enemies.add(data["propose"][1])
+					country.enemies.add(data["propose"][1].name)
 				elif data["propose"][0] == "allie":
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate allie with\033[33m", data["propose"][1].name, "\033[0m")
 					data["propose"][1].allies.add(country.name)
-					country.allies.add(data["propose"][1])
+					country.allies.add(data["propose"][1].name)
 				elif data["propose"][0] == "right of passage":
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate right of passage with\033[33m", data["propose"][1].name, "\033[0m")
 					data["propose"][1].right_of_passage.add(country.name)
-					country.right_of_passage.add(data["propose"][1])
+					country.right_of_passage.add(data["propose"][1].name)
 				elif data["propose"][0] == "non-aggression pact":
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0mcreate non-aggression pact with\033[33m", data["propose"][1].name, "\033[0m")
 					data["propose"][1].non_aggression_pacts.add(country.name)
-					country.non_aggression_pacts.add(data["propose"][1])
+					country.non_aggression_pacts.add(data["propose"][1].name)
 			if data.get("relate", False):
 				if data["relate"][0] > 0:
 					print("[ \033[34mG\033[0m ]", "\033[33m", country.name, "\033[0m relation to\033[33m", data["relate"][1].name, "\033[0mbecomes better per", data["relate"][0])
@@ -126,7 +126,7 @@ class Main:
 		self.width = width
 		self.height = height
 		self.unit_size = unit_size
-		self.colour_sea = '#6790a8'
+		self.colour_sea = '#98b7b9'
 		self.scenario_path = path
 		self.window = tk.Tk()
 		self.window.geometry(f'{self.width}x{self.height}')

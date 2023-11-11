@@ -23,7 +23,7 @@ class Bot:
 		self.stayed_units = int()
 
 	def __repr__(self):
-		return f'''Bot player(country={self.name}, colour={self.colour})'''
+		return f'Bot player:\ncountry={self.name},\ncolour={self.colour},\nenemies={self.enemies},\nallies={self.allies}'
 
 	def turn(self, mainobj, amount_units:int):
 		self.fronts = self.search_borders_from_zero(mainobj)
